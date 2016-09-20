@@ -27,20 +27,42 @@ module.exports = function(RED) {
         senderId = event.sender.id;
         node.log("Receiving messages from sender: " + senderId);
 
-        if (event.message && event.message.text) {
-          messageText = event.message.text;
-          node.log("Receiving message text: " + messageText);
+        if (event.message) {
+          if (event.message.text){
+            messageText = event.message.text;
+            node.log("Receiving message text: " + messageText);
 
-          node.send({
-            facebook: {
-              channel: FB_CHANNEL,
-              peerId: senderId || undefined,
-              msgType: 'text',
-              msgText: messageText,
-              msgImageURL: null,
-              msgTemplate: null
+            node.send({
+              facebook: {
+                channel: FB_CHANNEL,
+                peerId: senderId || undefined,
+                msgType: 'text',
+                msgText: messageText,
+                msgAttachmentURL: null,
+                msgTemplate: null
+              }
+            });
+          }else if (event.message.attachments){
+            for (j = 0; j < event.message.attachments.length; j++){
+              msgType = event.message.attachments[j].type;
+              msgAttachmentURL = event.message.attachments[j].payload.url;
+              node.log("Receiving message " + msgType + ": " + messageUrl);
+
+              node.send({
+                facebook: {
+                  channel: FB_CHANNEL,
+                  peerId: senderId || undefined,
+                  msgType: msgType,
+                  msgText: null,
+                  msgAttachmentURL: msgAttachmentURL,
+                  msgTemplate: null
+                }
+              });
+
+              // Todo : receive location message
+              
             }
-          });
+          }
         }
       }
 
